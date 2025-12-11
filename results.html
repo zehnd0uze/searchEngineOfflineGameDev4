@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Coogle Results</title>
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      margin:0;
+      background:#fff;
+      color:#202124;
+    }
+    header{
+      position:sticky;
+      top:0;
+      background:#fff;
+      border-bottom:1px solid #e0e0e0;
+      padding:10px 14px;
+      z-index:10;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+    .mini-logo{
+      font-size:1.8rem;
+      font-weight:700;
+      user-select:none;
+      font-family:'Product Sans', Arial, sans-serif;
+      cursor:pointer;
+    }
+    .mini-logo .g{color:#4285F4}
+    .mini-logo .o1{color:#EA4335}
+    .mini-logo .o2{color:#FBBC05}
+    .mini-logo .g2{color:#4285F4}
+    .mini-logo .l{color:#34A853}
+    .mini-logo .e{color:#EA4335}
+
+    .search-area{
+      flex:1; max-width:760px; position:relative;
+    }
+    .search-box{
+      width:100%;
+      display:flex;
+      align-items:center;
+      padding:8px 12px;
+      border:1px solid #dfe1e5;
+      border-radius:999px;
+      box-shadow:0 1px 3px rgba(60,64,67,.08);
+      transition:.2s;
+      gap:8px;
+      background:#fff;
+    }
+    .search-box:focus-within{
+      box-shadow:0 1px 8px rgba(32,33,36,.28);
+      border-color:#4285F4;
+    }
+    .search-box input{
+      border:none; outline:none; font-size:1.05rem; width:100%;
+    }
+    .search-box button{
+      border:none;background:transparent;cursor:pointer;color:#4285F4;font-weight:700;
+    }
+
+    .suggest{
+      position:absolute; top:100%; left:0; right:0;
+      background:#fff; border:1px solid #e0e0e0; border-radius:12px;
+      margin-top:8px; box-shadow:0 8px 24px rgba(0,0,0,.12);
+      display:none; overflow:hidden; z-index:5;
+    }
+    .suggest.show{display:block;}
+    .suggest-item{padding:10px 14px; cursor:pointer;}
+    .suggest-item:hover{background:#f1f3f4;}
+
+    .tabs{
+      margin-top:8px;
+      display:flex;
+      gap:18px;
+      padding-left:62px;
+      font-size:.95rem;
+      color:#5f6368;
+    }
+    .tab{
+      padding:8px 2px;
+      cursor:pointer;
+      border-bottom:2px solid transparent;
+      user-select:none;
+    }
+    .tab.active{
+      color:#1a73e8;
+      border-color:#1a73e8;
+      font-weight:600;
+    }
+
+    main{
+      max-width:820px;
+      margin:18px auto;
+      padding:0 18px 32px;
+    }
+    .result-count{
+      color:#70757a;font-size:.9rem;margin:10px 0 18px;
+    }
+
+    .info-card{
+      background:#fff;border:1px solid #e0e0e0;padding:16px;border-radius:10px;
+      box-shadow:0 1px 3px rgba(60,64,67,.08);
+      display:flex;gap:14px;align-items:flex-start;margin-bottom:18px;
+    }
+    .info-title{font-size:1.1rem;color:#1a0dab;margin-bottom:6px;}
+    .info-domain{color:#006621;font-size:.95rem;display:block;margin-bottom:8px;}
+    .info-desc{color:#4d5156;margin-bottom:10px;}
+    .sitelinks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+    .sitelink-item{
+      background:#f8f9fa;padding:8px 10px;border-radius:6px;text-decoration:none;color:#202124;
+      display:flex;justify-content:space-between;align-items:center;font-size:.95rem;
+    }
+    .sitelink-item:hover{background:#f1f3f4;}
+    .thumb{
+      width:120px;height:80px;border-radius:8px;background:#eee;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;color:#999;font-weight:700;
+    }
+
+    .result-item{margin-bottom:24px;}
+    .result-title{
+      font-size:1.25rem;color:#1a0dab;text-decoration:none;display:inline-block;margin-bottom:2px;
+    }
+    .result-title:hover{text-decoration:underline;}
+    .result-link{color:#006621;font-size:.95rem;display:block;margin-bottom:4px;}
+    .result-desc{color:#4d5156;line-height:1.45;font-size:1rem;}
+    
+
+    .no-result{
+      padding:20px;background:#f8f9fa;border-radius:10px;color:#5f6368;
+    }
+
+    .pager{
+      display:flex;gap:8px;align-items:center;justify-content:center;margin-top:12px;
+      color:#5f6368;font-size:.95rem;
+    }
+    .page-btn{
+      padding:6px 10px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;background:#fff;
+    }
+    .page-btn.active{border-color:#1a73e8;color:#1a73e8;font-weight:700;}
+    .page-btn:hover{background:#f8f9fa;}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="topbar">
+    <div class="mini-logo" onclick="location.href='index.html'">
+      <span class="g">C</span><span class="o1">o</span><span class="o2">o</span><span class="g2">g</span><span class="l">l</span><span class="e">e</span>
+    </div>
+
+    <div class="search-area">
+      <form id="searchForm" class="search-box" autocomplete="off">
+        <input id="searchInput" type="text" />
+        <button type="submit">Search</button>
+      </form>
+      <div id="suggestBox" class="suggest"></div>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+</header>
+
+<main>
+  <div class="result-count" id="resultCount"></div>
+  <div id="results"></div>
+  <div class="pager" id="pager"></div>
+</main>
+
+<script>
+  // ------- DATA -------
+  const fakeResults = [
+    {
+      title: "Parin Bansupa",
+      link: "www.parinbansupa.com",
+      desc: "Customize your ride with the best mods in Los Santos.",
+      page: "pages/parin_bansupa.html",
+      thumbnailText: "Parin",
+      type: "all",
+      keywords: ["parin","mods","los santos","garage","car"],
+      siteLinks: [
+        { title: 'Product', page: 'pages/parin_product.html' },
+        { title: 'Warranty', page: 'pages/parin_warranty.html' },
+        { title: 'Contact Us', page: 'pages/parin_contact.html' },
+        { title: 'Skin Glow Treatment', page: 'pages/parin_treatment.html' },
+        { title: 'IPL', page: 'pages/parin_ipl.html' }
+      ]
+    },
+    {
+      title: "Maze Bank",
+      link: "www.mazebank.com",
+      desc: "Manage your finances and make investments online.",
+      page: "pages/maze_bank.html",
+      thumbnailText: "Bank",
+      type: "news",
+      keywords: ["bank","finance","money","investment","loan"]
+    },
+    {
+      title: "Dynasty 8 Real Estate",
+      link: "www.dynasty8realestate.com",
+      desc: "Find your dream property in Los Santos and Blaine County.",
+      page: "pages/dynasty8.html",
+      thumbnailText: "Home",
+      type: "all",
+      keywords: ["real estate","house","property","buy","rent","dynasty"]
+    },
+    {
+      title: "Lifeinvader",
+      link: "www.lifeinvader.com",
+      desc: "Connect with friends and share your life online.",
+      page: "pages/lifeinvader.html",
+      thumbnailText: "Social",
+      type: "videos",
+      keywords: ["social","friends","post","lifeinvader","network"]
+    }
+  ];
+
+  const TABS = [
+    {id:"all", label:"All"},
+    {id:"images", label:"Images"},
+    {id:"news", label:"News"},
+    {id:"videos", label:"Videos"}
+  ];
+
+  const PER_PAGE = 3;
+
+  // ------- URL PARAMS -------
+  const params = new URLSearchParams(window.location.search);
+  const q = (params.get("q") || "").trim();
+  const tab = (params.get("tab") || "all").trim();
+  const page = parseInt(params.get("page") || "1", 10);
+
+  const input = document.getElementById("searchInput");
+  input.value = q;
+
+  const resultsDiv = document.getElementById("results");
+  const countDiv = document.getElementById("resultCount");
+  const pagerDiv = document.getElementById("pager");
+  const tabsDiv = document.getElementById("tabs");
+  const suggestBox = document.getElementById("suggestBox");
+
+  // ------- HELPERS -------
+  function escapeReg(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+ 
+
+  function scoreMatch(item, query){
+    const t = item.title.toLowerCase();
+    const d = item.desc.toLowerCase();
+    const k = (item.keywords || []).join(" ").toLowerCase();
+    const ql = query.toLowerCase();
+
+    let score = 0;
+    if (t.includes(ql)) score += 3;
+    if (k.includes(ql)) score += 2;
+    if (d.includes(ql)) score += 1;
+    return score;
+  }
+
+  function go(query, newTab=tab, newPage=1){
+    window.location.href = `results.html?q=${encodeURIComponent(query)}&tab=${newTab}&page=${newPage}`;
+  }
+
+  // ------- TABS RENDER -------
+  function renderTabs(){
+    tabsDiv.innerHTML = TABS.map(t=>`
+      <div class="tab ${t.id===tab?"active":""}" onclick="go('${q.replace(/'/g,"\\'")}', '${t.id}', 1)">
+        ${t.label}
+      </div>
+    `).join("");
+  }
+
+  // ------- AUTOCOMPLETE -------
+  const SUGGEST_POOL = Array.from(new Set(
+    fakeResults.flatMap(r => [r.title, ...(r.keywords||[])])
+  ));
+
+  input.addEventListener("input", ()=>{
+    const query=input.value.toLowerCase().trim();
+    if(!query){ suggestBox.classList.remove("show"); return; }
+    const hits=SUGGEST_POOL.filter(s=>s.toLowerCase().includes(query)).slice(0,6);
+    if(!hits.length){ suggestBox.classList.remove("show"); return; }
+    suggestBox.innerHTML = hits.map(h=>`
+      <div class="suggest-item" onclick="pickSuggest('${h.replace(/'/g,"\\'")}')">${h}</div>
+    `).join("");
+    suggestBox.classList.add("show");
+  });
+
+  function pickSuggest(v){
+    input.value=v;
+    suggestBox.classList.remove("show");
+    go(v, tab, 1);
+  }
+  document.addEventListener("click",(e)=>{
+    if(!suggestBox.contains(e.target) && e.target!==input){
+      suggestBox.classList.remove("show");
+    }
+  });
+
+  // ------- MAIN RENDER -------
+  function render(query){
+    resultsDiv.innerHTML = "";
+    pagerDiv.innerHTML = "";
+
+    if(!query){
+      countDiv.textContent = "";
+      resultsDiv.innerHTML = `<div class="no-result">Please enter a search term.</div>`;
+      return;
+    }
+
+    // filter tab
+    let pool = fakeResults;
+    if(tab !== "all"){
+      pool = pool.filter(x => (x.type||"all") === tab);
+    }
+
+    // match + sort
+    const matched = pool
+      .map(item => ({...item, _score: scoreMatch(item, query)}))
+      .filter(item => item._score > 0)
+      .sort((a,b) => b._score - a._score);
+
+    if(matched.length === 0){
+      countDiv.textContent = `No results for “${query}” in ${tab.toUpperCase()}`;
+      resultsDiv.innerHTML = `<div class="no-result">No results found. Try another keyword.</div>`;
+      return;
+    }
+
+    countDiv.textContent = `About ${matched.length} results for “${query}”`;
+
+    // paginate
+    const totalPages = Math.ceil(matched.length / PER_PAGE);
+    const safePage = Math.min(Math.max(page,1), totalPages);
+    const start = (safePage-1)*PER_PAGE;
+    const pageItems = matched.slice(start, start+PER_PAGE);
+
+    // top card if first page only
+    if(safePage === 1){
+      const top = pageItems[0];
+      if(top.siteLinks && top.siteLinks.length){
+        const infoHtml = `
+          <div class="info-card">
+            <div class="info-main">
+              <div class="info-title">${(top.title, query)}</div>
+              <span class="info-domain">${top.link}</span>
+              <div class="info-desc">${(top.desc, query)}</div>
+              <div class="sitelinks">
+                ${top.siteLinks.map(s => `
+                  <a class="sitelink-item" href="${s.page}">
+                    ${s.title}<span>›</span>
+                  </a>
+                `).join("")}
+              </div>
+            </div>
+            <div class="thumb">${top.thumbnailText || "Image"}</div>
+          </div>
+        `;
+        resultsDiv.innerHTML += infoHtml;
+      }
+    }
+
+    // list
+    pageItems.forEach(item=>{
+      resultsDiv.innerHTML += `
+        <div class="result-item">
+          <a class="result-title" href="${item.page}">${(item.title, query)}</a>
+          <span class="result-link">${item.link}</span>
+          <div class="result-desc">${(item.desc, query)}</div>
+        </div>
+      `;
+    });
+
+    // pager
+    renderPager(totalPages, safePage, query);
+  }
+
+  function renderPager(totalPages, current, query){
+    const btn = (p, label=p, active=false)=>`
+      <div class="page-btn ${active?"active":""}" onclick="go('${query.replace(/'/g,"\\'")}', '${tab}', ${p})">${label}</div>
+    `;
+
+    let html="";
+    if(current>1) html += btn(current-1, "Prev");
+    for(let p=1; p<=totalPages; p++){
+      html += btn(p, p, p===current);
+    }
+    if(current<totalPages) html += btn(current+1, "Next");
+
+    pagerDiv.innerHTML = html;
+  }
+
+  // search submit
+  document.getElementById("searchForm").addEventListener("submit",(e)=>{
+    e.preventDefault();
+    const newQ = input.value.trim();
+    go(newQ, tab, 1);
+  });
+
+  renderTabs();
+  render(q);
+</script>
+</body>
+</html>
